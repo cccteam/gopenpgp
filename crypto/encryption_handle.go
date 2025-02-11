@@ -83,18 +83,23 @@ func defaultEncryptionHandle(profile EncryptionProfile, clock Clock) *encryption
 // The encoding argument defines the output encoding, i.e., Bytes or Armored
 // The returned pgp message WriteCloser must be closed after the plaintext has been written.
 func (eh *encryptionHandle) EncryptingWriter(outputWriter Writer, encoding int8, options ...EncryptOption) (messageWriter WriteCloser, err error) {
-	pgpSplitWriter := castToPGPSplitWriter(outputWriter)
-	if pgpSplitWriter != nil {
-		return eh.encryptingWriters(pgpSplitWriter.Keys(), pgpSplitWriter, pgpSplitWriter.Signature(), nil, armorOutput(encoding))
-	}
-	if eh.DetachedSignature {
-		return nil, errors.New("gopenpgp: no pgp split writer provided for the detached signature")
-	}
 	encryptOptions := &encryptOptions{}
 	for _, option := range options {
 		option(encryptOptions)
 	}
-	return eh.encryptingWriters(nil, outputWriter, nil, encryptOptions.literalMetadata, armorOutput(encoding))
+	literalMetadata := &LiteralMetadata{
+		isUTF8:   eh.IsUTF8,
+		filename: encryptOptions.filenameMetadata,
+		ModTime:  encryptOptions.timeMetadata,
+	}
+	pgpSplitWriter := castToPGPSplitWriter(outputWriter)
+	if pgpSplitWriter != nil {
+		return eh.encryptingWriters(pgpSplitWriter.Keys(), pgpSplitWriter, pgpSplitWriter.Signature(), literalMetadata, armorOutput(encoding))
+	}
+	if eh.DetachedSignature {
+		return nil, errors.New("gopenpgp: no pgp split writer provided for the detached signature")
+	}
+	return eh.encryptingWriters(nil, outputWriter, nil, literalMetadata, armorOutput(encoding))
 }
 
 // Encrypt encrypts a plaintext message.

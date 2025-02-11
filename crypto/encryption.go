@@ -1,6 +1,8 @@
 package crypto
 
-import "github.com/ProtonMail/go-crypto/openpgp/packet"
+import (
+	"github.com/ProtonMail/go-crypto/openpgp/packet"
+)
 
 type EncryptionProfile interface {
 	EncryptionConfig() *packet.Config
@@ -50,13 +52,21 @@ type PGPSplitWriter interface {
 
 type EncryptOption func(*encryptOptions)
 
-// EncryptWithLiteralMetadata sets the literal metadata for the encryption.
-func EncryptWithLiteralMetadata(metadata *LiteralMetadata) EncryptOption {
+// EncryptWithFilenameMetadata sets the filename metadata for the literal data packet of the encrypted message.
+func EncryptWithFilenameMetadata(filename string) EncryptOption {
 	return func(opts *encryptOptions) {
-		opts.literalMetadata = metadata
+		opts.filenameMetadata = filename
+	}
+}
+
+// EncryptWithTimeMetadata sets the time metadata (unix) for the literal data packet of the encrypted message.
+func EncryptWithTimeMetadata(time int64) EncryptOption {
+	return func(opts *encryptOptions) {
+		opts.timeMetadata = time
 	}
 }
 
 type encryptOptions struct {
-	literalMetadata *LiteralMetadata
+	filenameMetadata string
+	timeMetadata     int64
 }
