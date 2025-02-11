@@ -17,9 +17,9 @@ type PGPEncryption interface {
 	// to different writers or to write a detached signature separately.
 	// The encoding argument defines the output encoding, i.e., Bytes or Armored
 	// The returned pgp message WriteCloser must be closed after the plaintext has been written.
-	EncryptingWriter(output Writer, encoding int8) (WriteCloser, error)
+	EncryptingWriter(output Writer, encoding int8, options ...EncryptOption) (WriteCloser, error)
 	// Encrypt encrypts a plaintext message.
-	Encrypt(message []byte) (*PGPMessage, error)
+	Encrypt(message []byte, options ...EncryptOption) (*PGPMessage, error)
 	// EncryptSessionKey encrypts a session key with the encryption handle.
 	// To encrypt a session key, the handle must contain either recipients or a password.
 	EncryptSessionKey(sessionKey *SessionKey) ([]byte, error)
@@ -46,4 +46,17 @@ type PGPSplitWriter interface {
 	Keys() Writer
 	// Signature returns the Writer to which an encrypted detached signature is written to.
 	Signature() Writer
+}
+
+type EncryptOption func(*encryptOptions)
+
+// WithLiteralMetadata sets the literal metadata for the encryption.
+func WithLiteralMetadata(metadata *LiteralMetadata) EncryptOption {
+	return func(opts *encryptOptions) {
+		opts.literalMetadata = metadata
+	}
+}
+
+type encryptOptions struct {
+	literalMetadata *LiteralMetadata
 }
