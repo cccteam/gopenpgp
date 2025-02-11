@@ -50,8 +50,8 @@ type PGPSplitWriter interface {
 
 type EncryptOption func(*encryptOptions)
 
-// WithLiteralMetadata sets the literal metadata for the encryption.
-func WithLiteralMetadata(metadata *LiteralMetadata) EncryptOption {
+// EncryptWithLiteralMetadata sets the literal metadata for the encryption.
+func EncryptWithLiteralMetadata(metadata *LiteralMetadata) EncryptOption {
 	return func(opts *encryptOptions) {
 		opts.literalMetadata = metadata
 	}
